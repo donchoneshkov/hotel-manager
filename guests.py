@@ -1,0 +1,1 @@
+# logic for the customer class should be here
