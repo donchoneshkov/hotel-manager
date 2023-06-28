@@ -10,6 +10,9 @@ def populate_level(level):
                 2: {'category' : 'ground_tiles' , 'type': 'concrete'},
                 3: {'category' : 'ground_tiles' , 'type': 'wood'},
                 4: {'category' : 'ground_tiles' , 'type': 'marble'},
+                100: {'category' : 'furniture_tiles', 'type': 'sofa'},
+                200: {'category' : 'appliance_tiles', 'type': 'tv'},
+                900: {'category' : 'entry_tiles', 'type' : 'entry'}
             }
 
     for i in range(len(level)):
@@ -17,7 +20,6 @@ def populate_level(level):
             value = level[i][j]
             if value in mapping:
                 level[i][j] = mapping[value]
-                print(mapping[value])
 
     # =========================== populate level map with coords and values
     level_map = []

@@ -10,10 +10,6 @@ from PIL import Image, ImageTk
 import time_manager
 
 
-
-
-
-
 class MessageLog(object):
     def __init__(self, root):
         self.root = root
@@ -21,6 +17,9 @@ class MessageLog(object):
         self.messages_box.grid(row=0, column=0, sticky=NSEW, padx=0, pady=0)
         self.messages_box.insert(END, 'placeholder message_box')
 
+    def update_self(self, message):
+        self.message = message
+        print(message)
 
 class TilePicker(object):
     def __init__(self, root, painter):
@@ -38,7 +37,7 @@ class TilePicker(object):
         photo_img = ImageTk.PhotoImage(img)
         label = Label(self.root, image=photo_img)
         label.image = photo_img
-        label.bind('<Button-1>', lambda event, tile={'path' : None, 'cost' : 0}: self.pick_tile(event, tile))
+        label.bind('<Button-1>', lambda event, tile= None: self.pick_tile(event, tile))
         self.tiles_list.append(label)
 # =================== Set painter to sell tile
         img = Image.open('img/other/sell.png')
@@ -46,7 +45,18 @@ class TilePicker(object):
         photo_img = ImageTk.PhotoImage(img)
         label = Label(self.root, image=photo_img)
         label.image = photo_img
-        label.bind('<Button-1>', lambda event, tile={'path' : 'img/tiles/grass_tile.png', 'cost' : 0, 'mode' : 'sell'}: self.pick_tile(event, tile))
+
+        label.bind('<Button-1>', lambda event, tile={
+                                                    'tile_type' : 'ground_tiles', 
+                                                    'tile' : 'grass',
+                                                    'path' : 'img/tiles/grass_tile.png', 
+                                                    'cost' : 0,  
+                                                    'sellable' : True,
+                                                    'passable' : False,
+                                                    'tile_satisfaction' : 0,
+                                                    'use_cost' : 0,
+                                                    'map_value': 0,} : self.pick_tile(event, tile))
+
         self.tiles_list.append(label)
 # ===================
         for key in tile_category.keys():
@@ -61,8 +71,6 @@ class TilePicker(object):
             lbl.grid(row= i // 5 + 1, column= i % 5)
 
     def pick_tile(self, event, tile):
-        print('click')
-        print(tile)
         self.painter.update_painter(tile)
 
 
@@ -82,7 +90,6 @@ class TilesCatalog(object):
     def update_tile_picker(self, event):
         selected_item =  self.catalog.curselection()
         if selected_item:
-            print('selected item: ', self.catalog.get(self.catalog.curselection()))
             selected_tile_category = self.catalog.get(selected_item)
             self.tile_picker.display_tiles_selection(tile_types.tile_types[selected_tile_category])
 
@@ -92,7 +99,7 @@ class InfoPane(object):
         self.root = root
         self.player_state = player_state
         # get time from time_manager.py
-        self.game_time = time_manager.GameTime()
+        self.game_date = time_manager.GameDate()
 
         self.money_label = Label(root, text='Money : $')
         self.money_label.grid(row=0, column=0, padx=0, pady=0, sticky=NSEW)
@@ -106,7 +113,7 @@ class InfoPane(object):
 
         self.date_label = Label(root, text='Date : ')
         self.date_label.grid(row=2, column=0, padx=0, pady=0, sticky=NSEW)
-        self.date_value = Label(root, text=self.game_time.display_date)
+        self.date_value = Label(root, text=self.game_date.display_date)
         self.date_value.grid(row=2, column=1, padx=0, pady=0, sticky=NSEW)
         
         self.add_day_button = Button(root, text='Add day', command=self.update_time)
@@ -124,8 +131,8 @@ class InfoPane(object):
         self.stars_value.config(text=self.player_state.stars_var.get())
 
     def update_time(self):
-        self.game_time.add_day()
-        self.date_value.config(text=self.game_time.display_date)
+        self.game_date.add_day()
+        self.date_value.config(text=self.game_date.display_date)
 
     
 class TileInfoPane(object):

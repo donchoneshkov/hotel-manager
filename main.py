@@ -5,6 +5,10 @@ import populate_background
 from levels import level1
 import tile_painter
 import player
+import tile_types
+import guests
+import random
+
 root = Tk()
 root.title('Hotel Manager')
 
@@ -35,20 +39,31 @@ tile_info_pane = TileInfoPane(info_pane_frame, tile_painter.painter)
 level_map = populate_background.populate_level(level1.level)
 
 
-
-
 tiles = {}
+entry_tile = None
 for coords, value in level_map:
-    # print(coords, value)
-    tile = Tile(canvas, value, player_state)
+
+    tile = Tile(canvas, tile_types.tile_types[value['category']][value['type']], player_state)
     tile.load(coords[0], coords[1])
-    # tiles.append(tile)
 
     tiles[coords[0], coords[1]] = tile
-    # print(tiles[coords[0], coords[1]])
+    if tile.type == 'entry':
+        entry_tile = tile
 
-# print(tiles[4 , 15].position)
-# tiles[4, 15].on_click('e')
+
+
+
+guests_list = []
+def guest_caller():
+    guests.generate_guest(root, canvas, guests_list, tiles, entry_tile, player_state)
+    root.after(interval* 1000, guest_caller)
+
+
+guests.generate_guest(root, canvas, guests_list, tiles, entry_tile, player_state)
+
+interval = random.randint(10, 15)
+root.after(interval* 1000, guest_caller)
+
 
 
 
