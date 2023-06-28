@@ -1,15 +1,9 @@
-# here should go:
-# message log
-# types of placeables picking menu
-# placeables picker menu
-# info about day, money and etc.
 from tkinter import Label, Text, END, NSEW, NE, NW, E, Listbox, Button
 import tile_types
 from PIL import Image, ImageTk
-# import file_path
 import time_manager
 
-
+# not implemented
 class MessageLog(object):
     def __init__(self, root):
         self.root = root
@@ -21,6 +15,7 @@ class MessageLog(object):
         self.message = message
         print(message)
 
+# show tiles to pick and pass them to the painter to paint with them
 class TilePicker(object):
     def __init__(self, root, painter):
         self.root = root
@@ -73,7 +68,7 @@ class TilePicker(object):
     def pick_tile(self, event, tile):
         self.painter.update_painter(tile)
 
-
+# a listbox with catalogs of tiles, updates the tile picker
 class TilesCatalog(object):
     def __init__(self, root, tile_picker):
         self.root = root
@@ -93,7 +88,7 @@ class TilesCatalog(object):
             selected_tile_category = self.catalog.get(selected_item)
             self.tile_picker.display_tiles_selection(tile_types.tile_types[selected_tile_category])
 
-
+# show money, stars, date
 class InfoPane(object):
     def __init__(self, root, player_state):
         self.root = root
@@ -119,7 +114,7 @@ class InfoPane(object):
         self.add_day_button = Button(root, text='Add day', command=self.update_time)
         self.add_day_button.grid(row=3, column=0)
 
-        # track user money and stars
+        # track user money and stars and update labels if value changes
         self.player_state.money_var.trace('w', self.update_labels)
         self.player_state.stars_var.trace('w', self.update_labels)
         # initialize values
@@ -134,7 +129,7 @@ class InfoPane(object):
         self.game_date.add_day()
         self.date_value.config(text=self.game_date.display_date)
 
-    
+# not implemented, just a placeholder
 class TileInfoPane(object):
     def __init__(self, root, painter):
         self.root = root

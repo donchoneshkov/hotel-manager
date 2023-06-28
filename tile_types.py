@@ -1,5 +1,5 @@
 
-
+# all tiles apart from sell and none are here, sell is practically grass
 tile_types = {
                 'ground_tiles' :
                 {
@@ -88,6 +88,17 @@ tile_types = {
                         'tile_satisfaction' : 10,
                         'use_cost' : 15,
                         'map_value': 200
+                        },
+                    'atm' : {
+                        'tile_type' : 'appliance_tiles', 
+                        'tile' : 'atm', 
+                        'path' : 'img/appliances/atm.png', 
+                        'cost' : 500, 
+                        'sellable' : True, 
+                        'passable' : True,
+                        'tile_satisfaction' : 10,
+                        'use_cost' : -50,
+                        'map_value': 201
                         },
                 },
                 'entry_tiles' :

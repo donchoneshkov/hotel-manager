@@ -1,9 +1,7 @@
-# logic for the customer class should be here
+# logic for the guest class should be here
 from PIL import Image, ImageTk
 from tkinter import NW
 import random
-import time
-import time_manager
 
 class Guest(object):
     def __init__(self, canvas, tiles, player_state, guests_list):
@@ -30,8 +28,8 @@ class Guest(object):
         self.path = []
         self.has_left = False
 
+    # create a guest
     def enter_shop(self, x, y):
-        self.enter_time = time.time()
         self.canvas_tile = self.canvas.create_image(
             x * self.width, y * self.width,
             image=self.pic, anchor=NW
@@ -41,48 +39,56 @@ class Guest(object):
         self.position.append(y)
         self.move_guest()
 
-
-
+    # remove guest
     def leave_shop(self):
         self.canvas.delete(self.canvas_tile)
         self.has_left = True
         self.guests_list.pop()
         self.player_state.stars += self.opinion
 
-
+    # interact with good or bad tiles
     def check_current_tile(self):
-        print('checking tile:', self.position)
+        # if leaving there will be no tile checking
+        if self.is_leaving:
+            return
         checking_tile = self.tiles[self.position[0], self.position[1]]
-        print('checking_tile.tile_satisfaction is:', checking_tile.tile_satisfaction)
+
         if checking_tile:
+            # if tile gives satisfaction and guest has money, or if tile gives money, do the corresponding
             if checking_tile.tile_satisfaction > 0:
                 if self.money >= checking_tile.use_cost:
-                    self.satisfaction += checking_tile.tile_satisfaction
-                    self.money -= checking_tile.use_cost
-                    self.player_state.money += checking_tile.use_cost
+                    if checking_tile.use_cost > 0:
+                        self.satisfaction += checking_tile.tile_satisfaction
+                        self.money -= checking_tile.use_cost
+                        self.player_state.money += checking_tile.use_cost
+                    elif checking_tile.use_cost < 0:
+                        self.satisfaction += checking_tile.tile_satisfaction
+                        self.money -= checking_tile.use_cost
                     print(self.money)
                     print(self.player_state.money)
                 else:
                     print('customer leaving because he has no money')
                     # increase stars
-                    self.opinion = +0.1
+                    self.opinion = +1
                     self.is_leaving = True
+            # tile satisfaction is not > 0, so we add the negative value to the guest's satisfaction 
             else:
                 if self.satisfaction > 0:
                     self.satisfaction += checking_tile.tile_satisfaction
                 else:
                     print('customer leaving because he has no satisfaction')
                     # lower stars by a lot
-                    self.opinion = -0.4
+                    self.opinion = -2
                     self.is_leaving = True
 
+    # move guest every 1000ms
     def move_guest(self):
-        self.check_current_tile()
+        # if has_left, stop calling yourself
         if self.has_left:
             return
+        # get path from get_new_path
         new_position = self.get_new_path()
 
-        # print('new position is:', new_position)
         new_x = new_position[0]
         new_y = new_position[1]
     
@@ -96,17 +102,16 @@ class Guest(object):
         self.canvas.coords(self.canvas_tile, canvas_x, canvas_y)
 
         self.position = new_position
-
+        # finally check what is on the tile, add remove money/satisfaction
+        self.check_current_tile()
+        # call yourself again after 1000ms
         self.canvas.after(1000, self.move_guest)
 
 
 
+    # pass the path to move to to the move_guest method
     def get_new_path(self):
-        
-        tileN = None
-        tileS = None
-        tileW = None
-        tileE = None
+        # if leaving, just go back
         if self.is_leaving == True:
             if len(self.path) > 0:
                 new_position = self.path.pop()
@@ -114,13 +119,18 @@ class Guest(object):
             else:
                 self.leave_shop()
         else:
+            # check the tiles to the N, S, W, E
+            tileN = None
+            tileS = None
+            tileW = None
+            tileE = None
             tileN = self.tiles.get((self.position[0], self.position[1] - 1))
             tileS = self.tiles.get((self.position[0], self.position[1] + 1))
             tileW = self.tiles.get((self.position[0] + 1, self.position[1]))
             tileE = self.tiles.get((self.position[0] - 1, self.position[1]))
 
             passable_tiles = []
-
+            # if passable is True
             if tileN and tileN.passable:
                 passable_tiles.append((self.position[0], self.position[1] - 1))
             if tileS and tileS.passable:
@@ -129,10 +139,11 @@ class Guest(object):
                 passable_tiles.append((self.position[0] + 1, self.position[1]))
             if tileE and tileE.passable:
                 passable_tiles.append((self.position[0] - 1, self.position[1]))
-
+            # pick one at random and add it to the path
             if passable_tiles:
                 new_position = random.choice(passable_tiles)
                 tries = 0
+                # try a bit to get a new path, if you get a tile you've already visited 10 times, just call it a day
                 while new_position in self.path:
                     tries += 1
                     if tries < 10:
@@ -140,30 +151,24 @@ class Guest(object):
                     else:
                         print('customer is leaving now, because he was lost')
                         # lower stars a little
-                        self.opinion = -0.1
+                        self.opinion = -1
 
                         self.is_leaving = True
                         return self.get_new_path()
-                # print(new_position)
-                # print(self.path)
+                # append this position to self.path and return it to the move_guest method
                 self.path.append(new_position)
-                # print(self.path)
                 return new_position
-
+        # if all fails, return where you are
         return (self.position[0], self.position[1])
 
 
-
-
-
-
-
+# generate guests stats and return them to the Guest class
 def generate_guest_stats():
     money = random.randint(35, 80)
     interests = 'placeholder'
-    opinion = 5
+    opinion = 0
     path = 'img/other/customer.png'
-    satisfaction = random.randint(0, 5)
+    satisfaction = random.randint(3, 10)
     stats = {
         'money' : money,
         'interests' : interests,
@@ -174,7 +179,7 @@ def generate_guest_stats():
 
     return stats
 
-
+# generate guests if there are fewer than 5 guests
 def generate_guest(root, canvas, guests_list, tiles, entry_tile, player_state):
     if len(guests_list) < 5:
         guest = Guest(canvas, tiles, player_state, guests_list)
